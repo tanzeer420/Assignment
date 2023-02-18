@@ -1,0 +1,59 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+
+
+def statistics(url):
+    spark=SparkSession.builder.master("local[1]").appName("Test").getOrCreate()
+    df=spark.read.option("header",True).csv(url)
+
+    
+    
+    def rowCount(x):
+        print("Total number of rows in the file : ",df.count())
+        
+    rowCount(df)
+    
+    
+    
+    def columnCount(x):
+        
+        print("\nTotal number of columns in the file : ",len(df.columns))
+        
+    columnCount(df)
+    
+    
+    
+    def distinctValueCount(x):
+        
+        df_dvc = x.columns
+        print("\nNumber of distinct values for each column: ")
+        for i in df_dvc:
+             print(i,':',x.select(i).distinct().count())
+        
+    distinctValueCount(df)
+    
+    
+    
+    def nullValueCount(x):
+        
+        print("\nNumber of empty values for each column: ")
+        
+        for y in x.columns:
+
+            df2 = x.select([count(when(x[y].contains('None') | \
+                                       x[y].contains('NULL') | \
+                                      (x[y] == '' ) | \
+                                       x[y].isNull() | \
+                                       isnan(x[y]), y 
+                                      )).alias(y)
+                                                 ])
+            df2.show()
+    nullValueCount(df)
+
+
+
+
+
+
+url = 'C:/Users/Tanzeer/Downloads/annual-enterprise-survey-2021-financial-year-provisional-csv.csv'
+statistics(url)
